@@ -1,53 +1,41 @@
-# To learn more about how to use Nix to configure your environment
-# see: https://developers.google.com/idx/guides/customize-idx-env
 { pkgs, ... }: {
-  # Which nixpkgs channel to use.
-  channel = "stable-24.05"; # or "unstable"
-  # Use https://search.nixos.org/packages to find packages
+  # Define o canal de pacotes do Nix. "stable-24.05" é uma boa escolha.
+  channel = "stable-24.05";
+
+  # Lista os pacotes essenciais para o ambiente.
   packages = [
-    # pkgs.go
-    # pkgs.python311
-    # pkgs.python311Packages.pip
-    # pkgs.nodejs_20
-    # pkgs.nodePackages.nodemon
+    pkgs.nodejs_20 # Precisamos do Node.js
+    pkgs.pnpm       # E do pnpm, a ferramenta correta para este projeto.
   ];
-  # Sets environment variables in the workspace
-  env = {};
+
+  # Configurações do ambiente de desenvolvimento (IDX).
   idx = {
-    # Search for the extensions you want on https://open-vsx.org/ and use "publisher.id"
+    # Extensões úteis do VS Code.
     extensions = [
-      # "vscodevim.vim"
-      "google.gemini-cli-vscode-ide-companion"
+      "esbenp.prettier-vscode" # Para formatação de código.
+      "dbaeumer.vscode-eslint"  # Para identificar problemas no código.
     ];
-    # Enable previews
-    previews = {
-      enable = true;
-      previews = {
-        # web = {
-        #   # Example: run "npm run dev" with PORT set to IDX's defined port for previews,
-        #   # and show it in IDX's web preview panel
-        #   command = ["npm" "run" "dev"];
-        #   manager = "web";
-        #   env = {
-        #     # Environment variables to set for your server
-        #     PORT = "$PORT";
-        #   };
-        # };
+
+    # Define o que acontece no ciclo de vida do workspace.
+    workspace = {
+      # Comandos que rodam TODA VEZ que o workspace inicia.
+      onStart = {
+        # Garante que as dependências do projeto sejam instaladas.
+        # O `--prefix` aponta para a pasta correta do projeto.
+        install-deps = "pnpm install --prefix 01-css-global";
       };
     };
-    # Workspace lifecycle hooks
-    workspace = {
-      # Runs when a workspace is first created
-      onCreate = {
-        # Example: install JS dependencies from NPM
-        # npm-install = "npm install";
-        # Open editors for the following files by default, if they exist:
-        default.openFiles = [ ".idx/dev.nix" "README.md" ];
-      };
-      # Runs when the workspace is (re)started
-      onStart = {
-        # Example: start a background task to watch and re-build backend code
-        # watch-backend = "npm run watch-backend";
+
+    # Configura a aba de pré-visualização (Preview).
+    previews = {
+      enable = false;
+      previews = {
+        # A pré-visualização padrão que chamaremos de "web".
+        web = {
+          # Comando para iniciar o servidor de desenvolvimento.
+          command = ["pnpm" "run" "dev" "--prefix" "01-css-global"];
+          manager = "web";
+        };
       };
     };
   };
